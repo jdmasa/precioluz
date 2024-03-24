@@ -6,6 +6,8 @@ import (
 	"io"
 	"net/http"
 	"time"
+
+	blinkt "github.com/alexellis/blinkt_go"
 )
 
 type hourlyprice []struct {
@@ -44,14 +46,57 @@ func main() {
 	}
 
 	// fmt.Println(PrettyPrint(result))
-
+	today = append(today, tomorrow...)
 	hours, _, _ := time.Now().Clock()
 	// Loop through the data node for the FirstName
+	brightness := 0.2
+	led := blinkt.NewBlinkt(brightness)
+
+	led.SetClearOnExit(true)
+
+	led.Setup()
+
+	blinkt.Delay(100)
+	led.Clear()
+	status := false
+	pixel := 0
 	for _, rec := range today {
-		if rec.Hour >= hours {
+		if rec.Hour == hours {
+			status = true
+		}
+		if pixel == 8 {
+			status = false
+		}
+		if status {
 			fmt.Println(rec.Hour)
 			fmt.Println(rec.Zone)
+
+			switch Zone := rec.Zone; Zone {
+			case "valle":
+				r := 0
+				g := 255
+				b := 0
+				led.SetPixel(pixel, r, g, b)
+			case "llano":
+				r := 255
+				g := 80
+				b := 0
+				led.SetPixel(pixel, r, g, b)
+			case "punta":
+				r := 255
+				g := 0
+				b := 0
+				led.SetPixel(pixel, r, g, b)
+			default:
+				r := 0
+				g := 0
+				b := 0
+				led.SetPixel(pixel, r, g, b)
+			}
+			pixel++
 		}
 
 	}
+	led.Show()
+
 }
