@@ -1,0 +1,6 @@
+github.com/alexellis/blinkt_go v0.0.0-20180120180744-cc0ca163e0bc h1:J/jqFQqoBMa8TD5W0FunVxE3kuWaE+ZdiSrZ5L99SVg=
+github.com/alexellis/blinkt_go v0.0.0-20180120180744-cc0ca163e0bc/go.mod h1:IeFkr+RPLd7XL6LrhpHfSZerUIwVvVhFMwwrOr/FhYU=
+github.com/alexellis/rpi v0.0.0-20170116141016-ab6a4e79f0bd h1:Mx9cUprDyCdGzjWwFRZmrL/G4Cs89/EB8QcZ6j+Mx1Y=
+github.com/alexellis/rpi v0.0.0-20170116141016-ab6a4e79f0bd/go.mod h1:/u5IOmNVyGUK5Y/TV6Dk+4BlqWTEhmvbzvpKPSeZXZQ=
+github.com/rogpeppe/rog-go v0.0.0-20210831093509-3c886aea54f1 h1:/OCwqErMqAvGqXRIHZUrPQjvLJ757WSqxnlphaw+9Os=
+github.com/rogpeppe/rog-go v0.0.0-20210831093509-3c886aea54f1/go.mod h1:k0jrzHKdCmJ6zT6iJj0pE0xqilSXprArlMF7cUBMO/w=
