@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"sort"
+	"strconv"
 	"time"
 
 	blinkt "github.com/alexellis/blinkt_go"
@@ -19,84 +21,97 @@ type hourlyprice []struct {
 
 func main() {
 
-	// Get request
-	resp, err := http.Get("https://raw.githubusercontent.com/jorgeatgu/apaga-luz/main/public/data/today_price.json")
+	// Get today price request
+	todresp, err := http.Get("https://raw.githubusercontent.com/jorgeatgu/apaga-luz/main/public/data/today_price.json")
 	if err != nil {
 		fmt.Println("No response from request")
 	}
-	defer resp.Body.Close()
-	body, _ := io.ReadAll(resp.Body) // response body is []byte
+	defer todresp.Body.Close()
+	todbody, _ := io.ReadAll(todresp.Body) // response body is []byte
 
 	var today hourlyprice
-	if err := json.Unmarshal(body, &today); err != nil { // Parse []byte to the go struct pointer
+	if err := json.Unmarshal(todbody, &today); err != nil { // Parse []byte to the go struct pointer
 		fmt.Println("Can not unmarshal JSON")
 	}
 
-	// Get request
-	resp2, err := http.Get("https://raw.githubusercontent.com/jorgeatgu/apaga-luz/main/public/data/tomorrow_price.json")
+	// Create Slice with hourly prices and sort ascending
+	var m []float64
+
+	for _, rec := range today {
+		m = append(m, rec.Price)
+	}
+
+	sort.Slice(m, func(i, j int) bool {
+		return m[i] < m[j]
+	})
+
+	// Get tomorrow price request
+	tomresp, err := http.Get("https://raw.githubusercontent.com/jorgeatgu/apaga-luz/main/public/data/tomorrow_price.json")
 	if err != nil {
 		fmt.Println("No response from request")
 	}
-	defer resp.Body.Close()
-	body2, _ := io.ReadAll(resp2.Body) // response body is []byte
+	defer tomresp.Body.Close()
+	tombody, _ := io.ReadAll(tomresp.Body) // response body is []byte
 
 	var tomorrow hourlyprice
-	if err := json.Unmarshal(body2, &tomorrow); err != nil { // Parse []byte to the go struct pointer
+	if err := json.Unmarshal(tombody, &tomorrow); err != nil { // Parse []byte to the go struct pointer
 		fmt.Println("Can not unmarshal JSON")
 	}
 
-	// fmt.Println(PrettyPrint(result))
+	// Append tomorrow details to today
 	today = append(today, tomorrow...)
+
+	// Get current hour
 	hours, _, _ := time.Now().Clock()
-	// Loop through the data node for the FirstName
+
+	// Prepare Leds
 	brightness := 0.2
 	led := blinkt.NewBlinkt(brightness)
-
-	led.SetClearOnExit(true)
 
 	led.Setup()
 
 	blinkt.Delay(100)
 	led.Clear()
+	led.Show()
 	status := false
-	pixel := 0
+	pixel := 7
+	// Iterage through all hours and light leds from current hour until next 7.
 	for _, rec := range today {
 		if rec.Hour == hours {
 			status = true
 		}
-		if pixel == 8 {
-			status = false
-		}
-		if status {
-			fmt.Println(rec.Hour)
-			fmt.Println(rec.Zone)
 
-			switch Zone := rec.Zone; Zone {
-			case "valle":
+		if status {
+			result := "Pixel " + strconv.Itoa(pixel) + " - Hour " + strconv.Itoa(rec.Hour)
+
+			if rec.Price < m[8] {
 				r := 0
 				g := 255
 				b := 0
 				led.SetPixel(pixel, r, g, b)
-			case "llano":
+				result += " : Green"
+			} else if rec.Price < m[16] {
 				r := 255
 				g := 80
 				b := 0
 				led.SetPixel(pixel, r, g, b)
-			case "punta":
+				result += " : Orange"
+			} else {
 				r := 255
 				g := 0
 				b := 0
 				led.SetPixel(pixel, r, g, b)
-			default:
-				r := 0
-				g := 0
-				b := 0
-				led.SetPixel(pixel, r, g, b)
+				result += " : Red"
 			}
-			pixel++
+			fmt.Println(result)
+			pixel--
+		}
+		if pixel == -1 {
+			led.Show()
+			blinkt.Delay(100)
+			break
 		}
 
 	}
-	led.Show()
 
 }
