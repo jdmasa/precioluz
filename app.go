@@ -65,7 +65,7 @@ func main() {
 	hours, _, _ := time.Now().Clock()
 
 	// Prepare Leds
-	brightness := 0.2
+	brightness := 0.1
 	led := blinkt.NewBlinkt(brightness)
 
 	led.Setup()
